@@ -20,7 +20,7 @@ var $fh = {
    * because of how localStorage works, in cases where you requested a key which isn't present, a
    * null value is returned as a success rather than being counted as a failure!
    *
-   * @throws {Error} Errors are thrown upon a lack of sufficient arguments, a missing key or a bad act type.
+   * @throws {Error} Blows up upon a lack of sufficient arguments, a missing key or a bad act type.
    */
   data: function (config, successCb, failCb) {
     // If we're not given the callbacks, blow up.
@@ -32,18 +32,16 @@ var $fh = {
       return failCb("localStorage not supported!");
     }
 
-    function getData(key) {
-      return localStorage.getItem(key);
-    }
-
-    function setData(key, val) {
-      localStorage.setItem(key, val);
-    }
-
-    function removeData(key) {
-      localStorage.removeItem(key);
-    }
-
+    /**
+     * Helper function which parses the given config object, throwing errors where necessary and
+     * providing default values.
+     *
+     * @param {Object} userConfig The standard config object as defined in the FeedHenry docs.
+     *
+     * @return {Object} The processed config object, ready for use.
+     *
+     * @throws {Error} When a mandatory parameter or invalid value are provided.
+     */
     function buildConfig(userConfig) {
       var newConfig = {};
 
@@ -82,14 +80,14 @@ var $fh = {
 
     switch (config.act) {
       case "load":
-        successCb(buildRes(config.key, getData(config.key)));
+        successCb(buildRes(config.key, localStorage.getItem(config.key)));
         break;
       case "save":
-        setData(config.key, config.val);
+        localStorage.setItem(config.key, config.val);
         successCb(); // 'res' being undefined here, in accordance with actual behaviour.
         break;
       case "remove":
-        removeData(config.key);
+        localStorage.removeItem(config.key);
         successCb(); // TODO: Check if this actually returns undefined 'res'.
         break;
     }
